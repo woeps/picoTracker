@@ -212,6 +212,12 @@ bool picoTrackerAudioDriver::StartDriver() {
   picoTracker_sound_pause(0);
   startTime_ = millis();
 
+  // Kickstart DMA if it's not busy
+  if (!dma_channel_is_busy(AUDIO_DMA)) {
+    dma_channel_transfer_from_buffer_now(AUDIO_DMA, miniBlank_,
+                                         MINI_BLANK_SIZE);
+  }
+
   return true;
 };
 
@@ -219,6 +225,17 @@ void picoTrackerAudioDriver::StopDriver() {
   picoTracker_sound_pause(1);
   isPlaying_ = false;
 };
+
+void picoTrackerAudioDriver::OnAudioActive(bool active) {
+  if (active) {
+    if (!isPlaying_) {
+      StartDriver();
+    }
+    picoTracker_sound_pause(0);
+  } else {
+    StopDriver();
+  }
+}
 
 void picoTrackerAudioDriver::OnChunkDone() {
   if (isPlaying_) {

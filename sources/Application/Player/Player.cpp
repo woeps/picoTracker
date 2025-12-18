@@ -1193,32 +1193,44 @@ PlayerEventType PlayerEvent::GetType() { return type_; };
 unsigned int PlayerEvent::GetTickCount() { return tickCount_; };
 
 void Player::StartStreaming(const char *name, int startSample) {
+  mixer_.Lock();
   mixer_.StartStreaming(name, startSample);
   if (!isRunning_) {
     SetAudioActive(true);
   }
+  mixer_.Unlock();
 }
 
 void Player::StartLoopingStreaming(const char *name) {
+  mixer_.Lock();
   mixer_.StartLoopingStreaming(name);
   if (!isRunning_) {
     SetAudioActive(true);
   }
+  mixer_.Unlock();
 }
 
 void Player::StopStreaming() {
+  mixer_.Lock();
   mixer_.StopStreaming();
   if (!isRunning_) {
     SetAudioActive(false);
   }
+  mixer_.Unlock();
 }
 
 void Player::StartRecordStreaming(uint16_t *srcBuffer, uint32_t size,
                                   bool stereo) {
+  mixer_.Lock();
   mixer_.StartRecordStreaming(srcBuffer, size, stereo);
+  mixer_.Unlock();
 }
 
-void Player::StopRecordStreaming() { mixer_.StopRecordStreaming(); }
+void Player::StopRecordStreaming() {
+  mixer_.Lock();
+  mixer_.StopRecordStreaming();
+  mixer_.Unlock();
+}
 
 void Player::SetAudioActive(bool active) {
   MixerService *ms = MixerService::GetInstance();
